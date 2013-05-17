@@ -56,5 +56,9 @@ class Story < ActiveRecord::Base
   handle_asynchronously :whatever
 end
 
+class AllowDuplicationJob < SimpleJob
+  def allow_duplication; true; end
+end
+
 # Add this directory so the ActiveSupport autoloading works
 ActiveSupport::Dependencies.autoload_paths << File.dirname(__FILE__)

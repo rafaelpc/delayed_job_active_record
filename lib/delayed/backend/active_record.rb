@@ -15,13 +15,19 @@ module Delayed
         before_save :set_default_run_at
 
         def self.enqueue(*args)
-          digest = Digest::SHA1.hexdigest((args.dup.extract_options![:payload_object] || args.dup.shift).to_yaml)
-          job = where('digest = ?', digest).first
+          payload_object = args.dup.extract_options![:payload_object] || args.dup.shift
+          digest = Digest::SHA1.hexdigest(payload_object.to_yaml)
+          allow_duplication = !!(args.first.delete(:allow_duplication) || self.allow_duplication(payload_object))
+          job = allow_duplication ? nil : where('digest = ?', digest).first
           unless job 
             args.first.merge!(:digest => digest)
             job = super
           end
           job
+        end
+
+        def self.allow_duplication(payload_object)
+          payload_object.allow_duplication if payload_object.respond_to?(:allow_duplication)
         end
 
         def self.set_delayed_job_table_name

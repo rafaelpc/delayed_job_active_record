@@ -65,6 +65,22 @@ describe Delayed::Backend::ActiveRecord::Job do
       expect(job1).to_not eq job2
       expect(Delayed::Backend::ActiveRecord::Job.count).to eq 2
     end
+
+    it "allows enqueue duplicated jobs when the parameter 'allow_duplication' is passed to 'true'" do
+      obj = EnqueueJobMod.new
+      job1 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      job2 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj, :allow_duplication => true
+      expect(job1.id).to_not eq job2.id
+      expect(Delayed::Backend::ActiveRecord::Job.count).to eq 2
+    end
+
+    it "allows enqueue duplicated jobs when the payload_object has defined the method 'allow_duplication' and it returns 'true'" do
+      obj = AllowDuplicationJob.new
+      job1 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      job2 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      expect(job1.id).to_not eq job2.id
+      expect(Delayed::Backend::ActiveRecord::Job.count).to eq 2
+    end
   end
 
   context "ActiveRecord::Base.send(:attr_accessible, nil)" do
