@@ -33,10 +33,12 @@ ActiveRecord::Schema.define do
     table.datetime :failed_at
     table.string   :locked_by
     table.string   :queue
+    table.string   :digest
     table.timestamps
   end
 
   add_index :delayed_jobs, [:priority, :run_at], :name => 'delayed_jobs_priority'
+  add_index :delayed_jobs, [:digest], :name => 'delayed_jobs_digest'
 
   create_table :stories, :primary_key => :story_id, :force => true do |table|
     table.string :text

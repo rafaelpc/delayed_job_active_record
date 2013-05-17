@@ -1,4 +1,6 @@
 require 'active_record/version'
+require 'digest/sha1'
+
 module Delayed
   module Backend
     module ActiveRecord
@@ -8,9 +10,19 @@ module Delayed
         include Delayed::Backend::Base
 
         attr_accessible :priority, :run_at, :queue, :payload_object,
-          :failed_at, :locked_at, :locked_by
+          :failed_at, :locked_at, :locked_by, :digest
 
         before_save :set_default_run_at
+
+        def self.enqueue(*args)
+          digest = Digest::SHA1.hexdigest((args.dup.extract_options![:payload_object] || args.dup.shift).to_yaml)
+          job = where('digest = ?', digest).first
+          unless job 
+            args.first.merge!(:digest => digest)
+            job = super
+          end
+          job
+        end
 
         def self.set_delayed_job_table_name
           delayed_job_table_name = "#{::ActiveRecord::Base.table_name_prefix}delayed_jobs"

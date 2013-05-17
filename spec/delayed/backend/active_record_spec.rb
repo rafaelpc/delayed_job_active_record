@@ -36,10 +36,34 @@ describe Delayed::Backend::ActiveRecord::Job do
   end
 
   describe "enqueue" do
+    before :each do
+      Delayed::Backend::ActiveRecord::Job.destroy_all
+    end
+
     it "allows enqueue hook to modify job at DB level" do
       later = described_class.db_time_now + 20.minutes
       job = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => EnqueueJobMod.new
       expect(Delayed::Backend::ActiveRecord::Job.find(job.id).run_at).to be_within(1).of(later)
+    end
+
+    it "enqueue job with a generated digest" do
+      job = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => EnqueueJobMod.new
+      expect(Delayed::Backend::ActiveRecord::Job.find(job.id).digest).to_not be_blank
+    end
+
+    it "not allows enqueue duplicated jobs" do
+      obj = EnqueueJobMod.new
+      job1 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      job2 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      expect(job1).to eq job2
+      expect(Delayed::Backend::ActiveRecord::Job.count).to eq 1
+    end
+
+    it "allows enqueue non-duplicated jobs" do
+      job1 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => SimpleJob.new
+      job2 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => NamedJob.new
+      expect(job1).to_not eq job2
+      expect(Delayed::Backend::ActiveRecord::Job.count).to eq 2
     end
   end
 
