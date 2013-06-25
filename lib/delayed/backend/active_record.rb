@@ -16,7 +16,8 @@ module Delayed
 
         def self.enqueue(*args)
           payload_object = args.dup.extract_options![:payload_object] || args.dup.shift
-          digest = Digest::SHA1.hexdigest(payload_object.to_yaml)
+          digestible = args.first.delete(:digestible) || self.digestible(payload_object) || payload_object
+          digest = Digest::SHA1.hexdigest(digestible.to_yaml)
           allow_duplication = !!(args.first.delete(:allow_duplication) || self.allow_duplication(payload_object))
           job = allow_duplication ? nil : where('digest = ?', digest).first
           unless job 
@@ -24,6 +25,10 @@ module Delayed
             job = super
           end
           job
+        end
+
+        def self.digestible(payload_object)
+          payload_object.digestible if payload_object.respond_to?(:digestible)
         end
 
         def self.allow_duplication(payload_object)

@@ -31,6 +31,8 @@ group :test do
   gem 'coveralls', :require => false
   gem 'rspec', '>= 2.11'
   gem 'simplecov', :require => false
+  gem 'json', '~> 1.7.7'
+
 end
 
 gemspec

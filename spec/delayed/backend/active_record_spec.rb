@@ -81,6 +81,22 @@ describe Delayed::Backend::ActiveRecord::Job do
       expect(job1.id).to_not eq job2.id
       expect(Delayed::Backend::ActiveRecord::Job.count).to eq 2
     end
+
+    it "allows to create the 'digest' field from the 'digestible' parameter" do
+      obj = EnqueueJobMod.new
+      job1 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      job2 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj, :digestible => "something"
+      expect(job1.digest).to_not eq job2.digest
+      expect(Delayed::Backend::ActiveRecord::Job.count).to eq 2
+    end
+
+    it "not allows enqueue duplicated jobs with same 'digestible'" do
+      obj = DigestibleJob.new
+      job1 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      job2 = Delayed::Backend::ActiveRecord::Job.enqueue :payload_object => obj
+      expect(job1).to eq job2
+      expect(Delayed::Backend::ActiveRecord::Job.count).to eq 1
+    end
   end
 
   context "ActiveRecord::Base.send(:attr_accessible, nil)" do

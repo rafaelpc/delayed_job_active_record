@@ -4,7 +4,7 @@ require 'rails/generators/active_record/migration'
 
 # Extend the DelayedJobGenerator so that it creates an AR migration
 module DelayedJob
-  class UpgradeGenerator2 < ::DelayedJobGenerator
+  class UpgradeDigestGenerator < ::DelayedJobGenerator
     include Rails::Generators::Migration
     extend ActiveRecord::Generators::Migration
 

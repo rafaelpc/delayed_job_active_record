@@ -60,5 +60,9 @@ class AllowDuplicationJob < SimpleJob
   def allow_duplication; true; end
 end
 
+class DigestibleJob < SimpleJob
+  def digestible; "something"; end
+end
+
 # Add this directory so the ActiveSupport autoloading works
 ActiveSupport::Dependencies.autoload_paths << File.dirname(__FILE__)
